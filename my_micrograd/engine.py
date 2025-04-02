@@ -1,11 +1,14 @@
 from graphviz import Digraph
+from typing import Union
+
 import math
 
 
 class Value:
-    def __init__(self,data,_children = (), _operater= ""):
+    def __init__(self,data,_children = (), _operater= "", label =""):
         self.data = data
         self.grad = 0
+        self.label = label
         self._backward = lambda: None 
         self._prev = set(_children)
         self._op = _operater
@@ -32,7 +35,7 @@ class Value:
 
         return out
     
-    def __pow__(self,other: int | float) -> "Value":
+    def __pow__(self,other: Union[int, float]) -> "Value":
         assert isinstance(other,(int,float)), "only supporting int/float powers for now"
         out = Value(self.data ** other, (self,), "**")
 
