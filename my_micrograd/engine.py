@@ -29,8 +29,8 @@ class Value:
         out = Value(self.data * other.data, (self, other), "*")
 
         def backward():
-            self.grad += out.grad * other.grad
-            other.grad += out.grad * self.grad
+            self.grad += out.grad * other.data
+            other.grad += out.grad * self.data
         out._backward = backward
 
         return out
@@ -64,6 +64,23 @@ class Value:
             out._backward = _backward
             
         return out
+    
+    def backward(self):
+        topo =[]
+        visited = set()
+
+        def buildtopo(v: "Value"):
+          if v not in visited:
+            visited.add(v)
+            for child in v._prev:
+                buildtopo(child)
+            topo.append(v)
+        
+        buildtopo(self)
+
+        self.grad = 1
+        for v in reversed(topo):
+            v._backward()
 
     def __radd__(self,other):
         return self + other
@@ -125,7 +142,10 @@ def draw_dot(root):
 
 
 if __name__ == "__main__":
-    a = Value(1)
-    b = Value(2)
-    c = 1 + a 
-    print(c.data)
+    a = Value(5); a.label = "a"
+    b  = Value(2); b.label = "b"
+    c = Value(0.2)
+
+    d = a + b
+    o = d*c
+    o.backward()
