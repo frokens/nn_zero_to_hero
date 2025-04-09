@@ -6,6 +6,10 @@ import math
 
 class Value:
     def __init__(self,data,_children = (), _operater= "", label =""):
+        for child in _children:
+            if not isinstance(child,Value):
+                print(_operater)
+                raise f"children type: {child}"
         self.data = data
         self.grad = 0
         self.label = label
@@ -45,8 +49,8 @@ class Value:
 
         return out
 
-    def __exp__(self):
-        out = Value(math.exp(self.data))
+    def exp(self):
+        out = Value(math.exp(self.data), (self,), "exp")
 
         def backward():
             self.grad = out.grad * out.data
@@ -61,7 +65,7 @@ class Value:
         
         def _backward():
             self.grad += (1 - t**2) * out.grad
-            out._backward = _backward
+        out._backward = _backward
             
         return out
     
@@ -81,6 +85,17 @@ class Value:
         self.grad = 1
         for v in reversed(topo):
             v._backward()
+
+
+    def relu(self):
+        out = Value(0 if self.data < 0 else self.data, (self, ), "relu")
+        
+        def _backward():
+          self.grad += out.data * out.grad
+        out._backward = _backward
+
+        return out
+       
 
     def __radd__(self,other):
         return self + other
@@ -143,9 +158,7 @@ def draw_dot(root):
 
 if __name__ == "__main__":
     a = Value(5); a.label = "a"
-    b  = Value(2); b.label = "b"
-    c = Value(0.2)
-
-    d = a + b
-    o = d*c
-    o.backward()
+    b = a.tanh()
+    b.backward()
+    print(a.grad)
+    print(b.grad)
