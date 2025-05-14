@@ -10,7 +10,7 @@ class ODEFunc(nn.Module):
             nn.Linear(dim, 50),
             nn.Tanh(),
             nn.Linear(50, dim)
-        )
+        )KOKO
     
     def forward(self, t, y):
         return self.net(y)
